@@ -1,0 +1,38 @@
+service: my-service
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:PutItem"
+      Resource:
+        - "arn:aws:dynamodb:us-east-1:661816032940:table/Quote"
+  
+
+functions:
+  hello:
+    handler: handler.submitQuote
+    events:
+      - http:
+          path: submitQuote/post
+          method: post
+          cors: true
+          
+
+resources:
+  Resources:
+    MyDynamoDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: Quote
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
