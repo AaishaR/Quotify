@@ -1,28 +1,16 @@
 'use strict';
 
-const AWS = require('aws-sdk');
-// const uuid = require('uuid');
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
+const quoteService = require('./services/quoteService')
 
-module.exports.submitQuote = async (event, context) => {
+module.exports.submitQuoteHandler = async (event, context) => {
   console.log('Received event:', JSON.stringify(event, null, 2));
 
   const requestBody = JSON.parse(event.body);
   const userInput = requestBody.input;
 
-
-  const params = {
-    TableName: 'Quote',
-    Item: {
-      userId: context.awsRequestId,
-      quote: userInput,
-
-    },
-  };
-
   try {
 
-    await dynamoDB.put(params).promise();
+    await quoteService.submitQuote(context.awsRequestId, userInput);
 
     console.log('End of Lambda function (Success)');
     return {
@@ -44,3 +32,29 @@ module.exports.submitQuote = async (event, context) => {
     };
   }
 }
+
+module.exports.getRandomQuoteHandler = async () => {
+
+  try {
+    const randomQuote = await quoteService.getRandomQuote();
+
+    console.log('End of Lambda function (Success)');
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        message: 'Random quote retrieved successfully!',
+        quote: randomQuote,
+      }),
+    };
+  } catch (error) {
+    console.error('Error retrieving random quote from DynamoDB:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Internal Server Error' }),
+    };
+  }
+};

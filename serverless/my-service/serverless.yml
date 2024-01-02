@@ -12,12 +12,20 @@ provider:
   
 
 functions:
-  hello:
-    handler: handler.submitQuote
+  submitQuote:
+    handler: handler.submitQuoteHandler
     events:
       - http:
           path: submitQuote/post
           method: post
+          cors: true
+
+  getRandomQuote:
+    handler: handler.getRandomQuoteHandler
+    events:
+      - http:
+          path: getRandomQuote/get
+          method: get
           cors: true
           
 
